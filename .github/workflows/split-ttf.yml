@@ -1,0 +1,37 @@
+name: Split TTC and Release TTF
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download PingFangUI-VF TTC
+        run: |
+          curl -fLO https://github.com/ACT-02/PingFangUI-VF/releases/download/21.4d1e1/PingFangUI.tahoe.26.4.1.wght.wdth.ttc
+
+      - name: Split TTC into standalone variable TTFs
+        run: |
+          pip install fonttools
+          mkdir -p out
+          python3 - <<'EOF'
+          from fontTools.ttLib import TTCollection
+          ttc = TTCollection("PingFangUI.tahoe.26.4.1.wght.wdth.ttc")
+          for i, font in enumerate(ttc.fonts):
+              ps = font["name"].getDebugName(6) or f"font_{i}"
+              out = f"out/{ps}.ttf"
+              font.save(out)
+              print("Saved:", out)
+          EOF
+
+      - name: Create Release with all 5 TTFs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create 21.4d1e1 out/*.ttf \
+            --title "PingFangUI-VF 21.4d1e1 (Split TTF)" \
+            --notes "Unpacked from PingFangUI.tahoe.26.4.1.wght.wdth.ttc into standalone variable TTF files (SC, TC, HK, MO, JA)."
