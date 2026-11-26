@@ -33,5 +33,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create 21.4d1e1 out/*.ttf \
+            -R "${{ github.repository }}" \
             --title "PingFangUI-VF 21.4d1e1 (Split TTF)" \
             --notes "Unpacked from PingFangUI.tahoe.26.4.1.wght.wdth.ttc into standalone variable TTF files (SC, TC, HK, MO, JA)."
